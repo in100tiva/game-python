@@ -1,0 +1,28 @@
+{
+  "monstros": [
+    {
+      "nome": "Goblin Novato",
+      "nivel": 1,
+      "vida": 20,
+      "ataque": 5,
+      "defesa": 2,
+      "xp": 50
+    },
+    {
+      "nome": "Goblin Experiente",
+      "nivel": 3,
+      "vida": 40,
+      "ataque": 10,
+      "defesa": 5,
+      "xp": 100
+    },
+    {
+      "nome": "Goblin Chefe",
+      "nivel": 5,
+      "vida": 70,
+      "ataque": 15,
+      "defesa": 8,
+      "xp": 200
+    }
+  ]
+}

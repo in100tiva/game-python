@@ -1,5 +1,17 @@
 import json
 import os
+import random
+
+# Carregar monstros do arquivo JSON
+def carregar_monstros():
+    try:
+        with open("data_monstros.json", "r") as f:
+            return json.load(f)["monstros"]
+    except FileNotFoundError:
+        print("Arquivo 'data_monstros.json' não encontrado. Certifique-se de que ele está no mesmo diretório.")
+        return []
+
+monstros_disponiveis = carregar_monstros()
 
 # JSON com sistema, raças e classes
 json_data = """
@@ -144,14 +156,18 @@ json_data = """
 }
 """
 
-# Parse do JSON
 data = json.loads(json_data)
+
+# Função para calcular vida e mana
+def calcular_vida_mana(atributos, nivel):
+    vida = atributos["forca"] + atributos["constituicao"] + (10 * nivel)
+    mana = atributos["inteligencia"] + atributos["sabedoria"] + (5 * nivel)
+    return vida, mana
 
 # Função para criar personagem
 def criar_personagem():
     print("\n=== Criar Personagem ===")
     
-    # Escolher raça
     racas = data["racas"]
     print("Escolha uma raça:")
     for i, raca in enumerate(racas):
@@ -161,11 +177,9 @@ def criar_personagem():
     raca_escolhida = racas[escolha_raca]
     atributos = raca_escolhida["atributos_base"].copy()
     
-    # Aplicar bônus racial
     for atributo, valor in raca_escolhida["bonus_racial"].items():
         atributos[atributo] += valor
     
-    # Escolher classe
     classes = data["classes"]
     print("\nEscolha uma classe:")
     for i, classe in enumerate(classes):
@@ -174,22 +188,25 @@ def criar_personagem():
     escolha_classe = int(input("Digite o número da classe escolhida: ")) - 1
     classe_escolhida = classes[escolha_classe]
     
-    # Aplicar bônus da classe
     for atributo, valor in classe_escolhida["bonus_classe"].items():
         atributos[atributo] += valor
     
-    # Nomear o personagem
     nome_personagem = input("\nDigite o nome do seu personagem: ")
-    
-    # Criar o personagem final
+    nivel = 1
+    xp = 0
+    vida, mana = calcular_vida_mana(atributos, nivel)
+
     personagem = {
         "nome": nome_personagem,
         "raca": raca_escolhida["nome"],
         "classe": classe_escolhida["nome"],
+        "nivel": nivel,
+        "xp": xp,
+        "vida": vida,
+        "mana": mana,
         "atributos": atributos
     }
     
-    # Salvar personagem em arquivo JSON
     arquivo = f"{nome_personagem.lower().replace(' ', '_')}_personagem.json"
     with open(arquivo, "w") as f:
         json.dump(personagem, f, indent=4)
@@ -204,7 +221,7 @@ def carregar_save():
     
     if not arquivos:
         print("Nenhum save encontrado.")
-        return
+        return None
     
     print("Saves disponíveis:")
     for i, arquivo in enumerate(arquivos):
@@ -216,37 +233,75 @@ def carregar_save():
     with open(arquivo_escolhido, "r") as f:
         personagem = json.load(f)
     
-    print("\n=== Personagem Carregado ===")
-    print(f"Nome: {personagem['nome']}")
-    print(f"Raça: {personagem['raca']}")
-    print(f"Classe: {personagem['classe']}")
-    print("Atributos:")
-    for atributo, valor in personagem["atributos"].items():
-        print(f"{atributo.capitalize()}: {valor}")
-    
+    print(f"\n=== Personagem Carregado: {personagem['nome']} ===")
     return personagem
+
+# Função para o combate por turnos
+def batalha_turnos(personagem):
+    monstro = random.choice(monstros_disponiveis)
+    print(f"\nUm {monstro['nome']} apareceu!")
+    print(f"Vida: {monstro['vida']} | Ataque: {monstro['ataque']} | Defesa: {monstro['defesa']}")
+
+    while personagem["vida"] > 0 and monstro["vida"] > 0:
+        print(f"\n--- Turno de {personagem['nome']} ---")
+        print("1. Atacar")
+        print("2. Defender")
+        
+        acao = input("Escolha sua ação (1 ou 2): ")
+        if acao == "1":
+            dano = max(0, personagem["atributos"]["forca"] - monstro["defesa"])
+            monstro["vida"] -= dano
+            print(f"Você causou {dano} de dano no {monstro['nome']}!")
+        elif acao == "2":
+            defesa_bonus = personagem["atributos"]["constituicao"] // 2
+            print(f"Você defendeu, reduzindo o próximo dano em {defesa_bonus}!")
+        else:
+            print("Ação inválida!")
+            continue
+        
+        if monstro["vida"] <= 0:
+            print(f"\nVocê derrotou o {monstro['nome']} e ganhou {monstro['xp']} XP!")
+            personagem["xp"] += monstro["xp"]
+            while personagem["xp"] >= 100:
+                personagem["xp"] -= 100
+                personagem["nivel"] += 1
+                print(f"{personagem['nome']} subiu para o nível {personagem['nivel']}!")
+                personagem["vida"], personagem["mana"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])
+            salvar_personagem(personagem)
+            return
+        
+        print(f"\n--- Turno do {monstro['nome']} ---")
+        dano_monstro = max(0, monstro["ataque"] - personagem["atributos"]["constituicao"])
+        personagem["vida"] -= dano_monstro
+        print(f"O {monstro['nome']} causou {dano_monstro} de dano em você!")
+    
+    if personagem["vida"] <= 0:
+        print("\nVocê foi derrotado...")
+
+# Salvar personagem atualizado
+def salvar_personagem(personagem):
+    arquivo = f"{personagem['nome'].lower().replace(' ', '_')}_personagem.json"
+    with open(arquivo, "w") as f:
+        json.dump(personagem, f, indent=4)
+    print(f"\nFicha do personagem atualizada e salva em '{arquivo}'.")
 
 # Função para o modo história
 def modo_historia(personagem):
     print("\n=== Modo História ===")
-    print(f"Bem-vindo, {personagem['nome']}! Você está explorando uma antiga floresta mágica.")
-    print("De repente, você se depara com um portal brilhante. O que deseja fazer?")
-    print("1. Entrar no portal.")
-    print("2. Inspecionar a área ao redor.")
-    print("3. Recuar para o acampamento.")
+    print("Você encontra um cruzamento em sua jornada.")
+    print("1. Explorar a caverna.")
+    print("2. Continuar pela estrada.")
+    print("3. Descansar e recuperar vida.")
     
-    escolha = input("Escolha uma ação (1, 2 ou 3): ")
-    if escolha == "1":
-        print("\nVocê atravessa o portal e sente uma energia mágica poderosa ao seu redor.")
-    elif escolha == "2":
-        print("\nVocê encontra uma poção antiga escondida nas folhas. Ela pode ser útil mais tarde.")
+    escolha = input("Escolha sua ação (1, 2 ou 3): ")
+    if escolha in ["1", "2"]:
+        batalha_turnos(personagem)
     elif escolha == "3":
-        print("\nVocê volta para o acampamento, mas percebe que o portal desapareceu.")
+        personagem["vida"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])[0]
+        print("\nVocê descansou e recuperou toda a sua vida!")
+        salvar_personagem(personagem)
     else:
-        print("\nAção inválida. Você perdeu tempo e algo misterioso aconteceu.")
-
-    print("\nPrepare-se! Um inimigo aparece na sua frente, pronto para lutar!")
-    print("A batalha começará em breve... (ainda não implementada).")
+        print("Ação inválida!")
 
 # Menu principal
 def menu_principal():

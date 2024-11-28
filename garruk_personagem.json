@@ -1,13 +1,17 @@
 {
     "nome": "Garruk",
-    "raca": "An\u00e3o",
-    "classe": "B\u00e1rbaro",
+    "raca": "Orc",
+    "classe": "Cl\u00e9rigo",
+    "nivel": 1,
+    "xp": 0,
+    "vida": 36,
+    "mana": 24,
     "atributos": {
         "forca": 14,
-        "destreza": 9,
+        "destreza": 8,
         "constituicao": 12,
         "inteligencia": 8,
-        "sabedoria": 8,
-        "carisma": 8
+        "sabedoria": 11,
+        "carisma": 7
     }
 }

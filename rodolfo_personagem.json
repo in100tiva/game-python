@@ -1,0 +1,17 @@
+{
+    "nome": "Rodolfo",
+    "raca": "Elfo",
+    "classe": "Mago",
+    "nivel": 1,
+    "xp": 0,
+    "vida": 26,
+    "mana": 28,
+    "atributos": {
+        "forca": 8,
+        "destreza": 12,
+        "constituicao": 8,
+        "inteligencia": 11,
+        "sabedoria": 12,
+        "carisma": 8
+    }
+}

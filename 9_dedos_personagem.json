@@ -2,6 +2,10 @@
     "nome": "9 dedos",
     "raca": "Humano",
     "classe": "Ladino",
+    "nivel": 1,
+    "xp": 0,
+    "vida": 28,
+    "mana": 23,
     "atributos": {
         "forca": 9,
         "destreza": 11,
