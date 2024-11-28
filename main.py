@@ -214,7 +214,7 @@ def criar_personagem():
     
     return personagem
 
-# Função para carregar um save
+# Função para carregar um save e mostrar a ficha do personagem
 def carregar_save():
     print("\n=== Carregar um Save ===")
     arquivos = [f for f in os.listdir() if f.endswith("_personagem.json")]
@@ -233,10 +233,37 @@ def carregar_save():
     with open(arquivo_escolhido, "r") as f:
         personagem = json.load(f)
     
-    print(f"\n=== Personagem Carregado: {personagem['nome']} ===")
+    print("\n=== Ficha do Personagem ===")
+    print(f"Nome: {personagem['nome']}")
+    print(f"Raça: {personagem['raca']}")
+    print(f"Classe: {personagem['classe']}")
+    print(f"Nível: {personagem['nivel']}")
+    print(f"XP: {personagem['xp']}/100")
+    print(f"Vida: {personagem['vida']}")
+    print(f"Mana: {personagem['mana']}")
+    print("Atributos:")
+    for atributo, valor in personagem["atributos"].items():
+        print(f"  {atributo.capitalize()}: {valor}")
+    
     return personagem
 
-# Função para o combate por turnos
+# Função para salvar o personagem atualizado
+def salvar_personagem(personagem):
+    arquivo = f"{personagem['nome'].lower().replace(' ', '_')}_personagem.json"
+    with open(arquivo, "w") as f:
+        json.dump(personagem, f, indent=4)
+    print(f"\nFicha do personagem atualizada e salva em '{arquivo}'.")
+
+# Função para subir de nível e restaurar vida e mana
+def subir_nivel(personagem):
+    personagem["xp"] -= 100
+    personagem["nivel"] += 1
+    print(f"\n{personagem['nome']} subiu para o nível {personagem['nivel']}!")
+    personagem["vida"], personagem["mana"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])
+    print(f"Vida e Mana totalmente restauradas!")
+    salvar_personagem(personagem)
+
+# Função para combate por turnos
 def batalha_turnos(personagem):
     monstro = random.choice(monstros_disponiveis)
     print(f"\nUm {monstro['nome']} apareceu!")
@@ -263,10 +290,7 @@ def batalha_turnos(personagem):
             print(f"\nVocê derrotou o {monstro['nome']} e ganhou {monstro['xp']} XP!")
             personagem["xp"] += monstro["xp"]
             while personagem["xp"] >= 100:
-                personagem["xp"] -= 100
-                personagem["nivel"] += 1
-                print(f"{personagem['nome']} subiu para o nível {personagem['nivel']}!")
-                personagem["vida"], personagem["mana"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])
+                subir_nivel(personagem)
             salvar_personagem(personagem)
             return
         
@@ -274,16 +298,10 @@ def batalha_turnos(personagem):
         dano_monstro = max(0, monstro["ataque"] - personagem["atributos"]["constituicao"])
         personagem["vida"] -= dano_monstro
         print(f"O {monstro['nome']} causou {dano_monstro} de dano em você!")
+        salvar_personagem(personagem)
     
     if personagem["vida"] <= 0:
         print("\nVocê foi derrotado...")
-
-# Salvar personagem atualizado
-def salvar_personagem(personagem):
-    arquivo = f"{personagem['nome'].lower().replace(' ', '_')}_personagem.json"
-    with open(arquivo, "w") as f:
-        json.dump(personagem, f, indent=4)
-    print(f"\nFicha do personagem atualizada e salva em '{arquivo}'.")
 
 # Função para o modo história
 def modo_historia(personagem):
@@ -297,8 +315,8 @@ def modo_historia(personagem):
     if escolha in ["1", "2"]:
         batalha_turnos(personagem)
     elif escolha == "3":
-        personagem["vida"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])[0]
-        print("\nVocê descansou e recuperou toda a sua vida!")
+        personagem["vida"], personagem["mana"] = calcular_vida_mana(personagem["atributos"], personagem["nivel"])
+        print("\nVocê descansou e recuperou toda a sua vida e mana!")
         salvar_personagem(personagem)
     else:
         print("Ação inválida!")
