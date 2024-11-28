@@ -1,0 +1,13 @@
+{
+    "nome": "9 dedos",
+    "raca": "Humano",
+    "classe": "Ladino",
+    "atributos": {
+        "forca": 9,
+        "destreza": 11,
+        "constituicao": 9,
+        "inteligencia": 9,
+        "sabedoria": 9,
+        "carisma": 11
+    }
+}

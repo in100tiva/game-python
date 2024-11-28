@@ -1,0 +1,13 @@
+{
+    "nome": "Garruk",
+    "raca": "An\u00e3o",
+    "classe": "B\u00e1rbaro",
+    "atributos": {
+        "forca": 14,
+        "destreza": 9,
+        "constituicao": 12,
+        "inteligencia": 8,
+        "sabedoria": 8,
+        "carisma": 8
+    }
+}
